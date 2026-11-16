@@ -4,15 +4,26 @@ on:
 #  schedule:
 #    - cron: "0 0 1 * *"
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
     runs-on: ubuntu-latest
     container: obolibrary/odkfull:v1.6
     strategy:
       max-parallel: 1
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
       - name: Checkout main branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
 
       - name: work around permission issue
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -27,7 +38,7 @@ jobs:
       - name: Update HPOA
         run: cd src/ontology/ && make ROBOT_ENV='ROBOT_JAVA_ARGS=-Xmx6G' GITHUB_ACTION=true hpoa -B
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
         with:
           commit-message: Update release files
           title: 'Update all release files'
@@ -35,7 +46,7 @@ jobs:
             Updates all HPO release files.
           assignees: matentzn
       - name: Run release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           generate_release_notes: true
           draft: true

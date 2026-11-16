@@ -7,7 +7,12 @@ jobs:
   imports:
     runs-on: macos-latest
     steps:
-      - uses: docker-practice/actions-setup-docker@master
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master
       - run: |
           set -x
           docker version
@@ -17,7 +22,7 @@ jobs:
       # Checks-out current branch
 
       - name: Checkout main branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
 
       - name: work around permission issue
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -29,7 +34,7 @@ jobs:
         run: cd src/ontology/ && docker run -v $PWD/../../:/work -w /work/src/ontology -e ROBOT_JAVA_ARGS='-Xmx10G' -e JAVA_OPTS='-Xmx10G' --rm obolibrary/odklite make IMP=false IMP_LARGE=false GITHUB_ACTION=true ../patterns/definitions.owl
       
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
         with:
           commit-message: Update imports and components
           title: 'Update all imports and components'

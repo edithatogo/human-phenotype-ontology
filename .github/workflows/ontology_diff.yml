@@ -14,13 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     container: obolibrary/odkfull:v1.6
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Build ontology
         run: |
           cd src/ontology; make IMP=FALSE PAT=FALSE MIR=FALSE hp.obo -B
           cp hp.obo tmp/hp-branch.obo
       - name: Upload tmp/hp-branch.obo
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hp-branch.obo
           path: src/ontology/tmp/hp-branch.obo
@@ -29,7 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     container: obolibrary/odkfull:v1.6
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           ref: master
       - name: Classify ontology
@@ -37,7 +47,7 @@ jobs:
           cd src/ontology; make IMP=FALSE PAT=FALSE MIR=FALSE hp.obo -B
           cp hp.obo tmp/hp-main.obo
       - name: Upload tmp/hp-main.obo
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hp-main.obo
           path: src/ontology/tmp/hp-main.obo
@@ -49,14 +59,19 @@ jobs:
     runs-on: ubuntu-latest
     container: obolibrary/odkfull:v1.6
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Download main build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: hp-main.obo
           path: src/ontology/tmp/
       - name: Download branch build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: hp-branch.obo
           path: src/ontology/tmp/
@@ -65,7 +80,7 @@ jobs:
             cd src/ontology;
             runoak -i simpleobo:tmp/hp-main.obo diff -X simpleobo:tmp/hp-branch.obo -o reports/difference_main-branch_base.md --output-type md 
       - name: Upload diff
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: difference_main-branch_base.md
           path: src/ontology/reports/difference_main-branch_base.md
@@ -73,9 +88,14 @@ jobs:
     needs: diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
       - name: Download reasoned diff
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: difference_main-branch_base.md
           path: src/ontology/reports/
@@ -91,7 +111,7 @@ jobs:
       #     identifier: "REASONED"
       # Post or update comment on pull request if difference_md.md exists
       - name: Post or update comment on pull request
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             const fs = require('fs');
